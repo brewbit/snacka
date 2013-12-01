@@ -45,7 +45,8 @@ snError snSocketDeinitCallback(void* socket)
 
 snError snSocketConnectCallback(void* userData,
                                 const char* host,
-                                int port)
+                                int port,
+                                snIOCancelCallback cancelCallback)
 {
     stfSocket* socket = (stfSocket*)userData;
     int result = stfSocket_connect(socket, host, port, 0, 0);
@@ -81,7 +82,8 @@ snError snSocketReadCallback(void* userData,
 snError snSocketWriteCallback(void* userData,
                               const char* buffer,
                               int bufferSize,
-                              int* numBytesWritten)
+                              int* numBytesWritten,
+                              snIOCancelCallback cancelCallback)
 {
     stfSocket* socket = (stfSocket*)userData;
     

@@ -50,7 +50,7 @@ extern "C"
      * @param state On input, the initial validator state. On output, the validator
      * state after processing the data. 
      */
-    int snUTF8ValidateStringIncremental(uint8_t* firstByte, int numBytes, uint32_t* state);
+    int snUTF8ValidateStringIncremental(const char* firstByte, int numBytes, uint32_t* state);
     
     /** 
      * Checks if a string is valid UTF-8.

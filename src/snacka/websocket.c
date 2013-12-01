@@ -105,7 +105,7 @@ struct snWebsocket
     
 };
 
-static void log(snWebsocket* sn, const char* message, ...)
+static void sn_log(snWebsocket* sn, const char* message, ...)
 {
     if (sn->logCallback)
     {
@@ -681,8 +681,6 @@ void snWebsocket_poll(snWebsocket* ws)
         ws->prevPollTime = newPollTime;
     }
     
-    snFrameParser* fp = &ws->frameParser;
-    const int numBytesLeftInBuffer = fp->maxFrameSize - fp->bufferPosition;
     int numBytesRead = 0;
     char readBytes[1024];
     snError e = ws->ioCallbacks.readCallback(ws->ioObject,
@@ -703,14 +701,14 @@ void snWebsocket_poll(snWebsocket* ws)
     
     if (0)
     {
-        log(ws, "bytes from socket:\n");
-        log(ws, "-----------------------\n");
+        sn_log(ws, "bytes from socket:\n");
+        sn_log(ws, "-----------------------\n");
         for (int i = 0; i < numBytesRead; i++)
         {
-            log(ws, "%c", readBytes[i]);
+            sn_log(ws, "%c", readBytes[i]);
         }
         
-        log(ws, "\n-----------------------\n");
+        sn_log(ws, "\n-----------------------\n");
     }
 
     int readOffset = 0;

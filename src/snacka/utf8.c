@@ -39,7 +39,7 @@ static uint32_t decode(uint32_t* state, uint32_t* codep, uint32_t byte)
 }
 
 
-static int countCodePoints(uint8_t* s, size_t* count)
+static int countCodePoints(const char* s, size_t* count)
 {
     uint32_t codepoint;
     uint32_t state = 0;
@@ -55,7 +55,7 @@ static int countCodePoints(uint8_t* s, size_t* count)
     return state != UTF8_ACCEPT;
 }
 
-int snUTF8ValidateStringIncremental(uint8_t* firstByte, int numBytes, uint32_t* state)
+int snUTF8ValidateStringIncremental(const char* firstByte, int numBytes, uint32_t* state)
 {
     for (int i = 0; i < numBytes; i++)
     {
@@ -71,7 +71,7 @@ int snUTF8ValidateStringIncremental(uint8_t* firstByte, int numBytes, uint32_t* 
 
 int snUTF8ValidateString(const char* string)
 {
-    int numCodePoints = 0;
+    size_t numCodePoints = 0;
     int result = countCodePoints(string, &numCodePoints);
     
     return result == 0;

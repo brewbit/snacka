@@ -121,14 +121,14 @@ static int on_header_value(http_parser* p, const char *at, size_t length)
 
 static int on_message_begin(http_parser* p)
 {
-    snOpeningHandshakeParser* parser = (snOpeningHandshakeParser*)p->data;
+    //snOpeningHandshakeParser* parser = (snOpeningHandshakeParser*)p->data;
     //printf("-------------ON MESSAGE BEGIN----------\n");
     return 0;
 }
 
 static int on_message_complete(http_parser* p)
 {
-    snOpeningHandshakeParser* parser = (snOpeningHandshakeParser*)p->data;
+    //snOpeningHandshakeParser* parser = (snOpeningHandshakeParser*)p->data;
     //c->response.bodySize = c->response.size - c->response.bodyStart;
     //printf("-----------ON MESSAGE COMPLETE---------\n");
     return 0;
@@ -371,7 +371,7 @@ static snError validateResponse(snOpeningHandshakeParser* p)
         result = SN_OPENING_HANDSHAKE_FAILED;
     }
     
-    return SN_NO_ERROR;
+    return result;
 }
 
 snError snOpeningHandshakeParser_processBytes(snOpeningHandshakeParser* p,

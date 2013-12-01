@@ -45,7 +45,8 @@ extern "C"
     
     snError snSocketConnectCallback(void* socket,
                                     const char* url,
-                                    int port);
+                                    int port,
+                                    snIOCancelCallback cancelCallback);
     
     snError snSocketDisconnectCallback(void* socket);
     
@@ -57,7 +58,8 @@ extern "C"
     snError snSocketWriteCallback(void* socket,
                                   const char* buffer,
                                   int bufferSize,
-                                  int* numBytesWritten);
+                                  int* numBytesWritten,
+                                  snIOCancelCallback cancelCallback);
     
 #ifdef __cplusplus
 }

@@ -79,7 +79,7 @@ static snError onFinishedParsingFrame(snFrameParser* parser)
             //totalPayloadSize++;
         }
         
-        unsigned char b = '\0';
+        char b = '\0';
         int v =snUTF8ValidateStringIncremental(&b, 1, &parser->utf8State);
         if (v == 0)
         {

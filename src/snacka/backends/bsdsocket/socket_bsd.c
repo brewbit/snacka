@@ -55,9 +55,9 @@ struct stfSocket
     int logErrors;
 };
 
-static void log(stfSocket* s, const char* fmt, ...)
-{
 #ifdef DEBUG
+static void sn_log(stfSocket* s, const char* fmt, ...)
+{
     if (s->logErrors)
     {
         va_list args;
@@ -65,8 +65,8 @@ static void log(stfSocket* s, const char* fmt, ...)
         vprintf(fmt,args);
         va_end(args);
     }
-#endif
 }
+#endif
 
 static int shouldStopOnError(stfSocket* s, int error, int* ignores, int numInores)
 {
@@ -92,97 +92,97 @@ static int shouldStopOnError(stfSocket* s, int error, int* ignores, int numInore
     {
         case EACCES:
         {
-            log(s, "errno == EACCES: (For UNIX domain sockets, which are identified by pathname) Write permission is denied on the destination socket file, or search permission is denied for one of the directories the path prefix. (See path_resolution(7).)\n");
+            sn_log(s, "errno == EACCES: (For UNIX domain sockets, which are identified by pathname) Write permission is denied on the destination socket file, or search permission is denied for one of the directories the path prefix. (See path_resolution(7).)\n");
             break;
         }
         case EAGAIN: //same as EWOULDBLOCK
         {
-            log(s, "errno == EAGAIN || errno == EWOULDBLOCK: The socket is marked nonblocking and the requested operation would block. POSIX.1-2001 allows either error to be returned for this case, and does not require these constants to have the same value, so a portable application should check for both possibilities.\n");
+            sn_log(s, "errno == EAGAIN || errno == EWOULDBLOCK: The socket is marked nonblocking and the requested operation would block. POSIX.1-2001 allows either error to be returned for this case, and does not require these constants to have the same value, so a portable application should check for both possibilities.\n");
             break;
         }
         case EBADF:
         {
-            log(s, "errno == EBADF: An invalid descriptor was specified.\n");
+            sn_log(s, "errno == EBADF: An invalid descriptor was specified.\n");
             break;
         }
         case ECONNRESET:
         {
-            log(s, "errno == ECONNRESET: Connection reset by peer.\n");
+            sn_log(s, "errno == ECONNRESET: Connection reset by peer.\n");
             break;
         }
         case EDESTADDRREQ:
         {
-            log(s, "errno == EDESTADDRREQ: The socket is not connection-mode, and no peer address is set.\n");
+            sn_log(s, "errno == EDESTADDRREQ: The socket is not connection-mode, and no peer address is set.\n");
             break;
         }
         case EFAULT:
         {
-            log(s, "errno == EFAULT: An invalid user space address was specified for an argument.\n");
+            sn_log(s, "errno == EFAULT: An invalid user space address was specified for an argument.\n");
             break;
         }
         case EINTR:
         {
-            log(s, "errno == EINTR: A signal occurred before any data was transmitted; see signal(7).\n");
+            sn_log(s, "errno == EINTR: A signal occurred before any data was transmitted; see signal(7).\n");
             break;
         }
         case EINVAL:
         {
-            log(s, "errno == EINVAL: Invalid argument passed.\n");
+            sn_log(s, "errno == EINVAL: Invalid argument passed.\n");
             break;
         }
         case EISCONN:
         {
-            log(s, "errno == EISCONN: The connection-mode socket was connected already but a recipient was specified. (Now either this error is returned, or the recipient specification is ignored.)\n");
+            sn_log(s, "errno == EISCONN: The connection-mode socket was connected already but a recipient was specified. (Now either this error is returned, or the recipient specification is ignored.)\n");
             break;
         }
         case EMSGSIZE:
         {
-            log(s, "errno == EMSGSIZE: The socket type requires that message be sent atomically, and the size of the message to be sent made this impossible.\n");
+            sn_log(s, "errno == EMSGSIZE: The socket type requires that message be sent atomically, and the size of the message to be sent made this impossible.\n");
             break;
         }
         case ENOBUFS:
         {
-            log(s, "errno == ENOBUFS: The output queue for a network interface was full. This generally indicates that the interface has stopped sending, but may be caused by transient congestion. (Normally, this does not occur in  Linux. Packets are just silently dropped when a device queue overflows.)\n");
+            sn_log(s, "errno == ENOBUFS: The output queue for a network interface was full. This generally indicates that the interface has stopped sending, but may be caused by transient congestion. (Normally, this does not occur in  Linux. Packets are just silently dropped when a device queue overflows.)\n");
             break;
         }
         case ENOMEM:
         {
-            log(s, "errno == ENOMEM: No memory available\n");
+            sn_log(s, "errno == ENOMEM: No memory available\n");
             break;
         }
         case ENOTCONN:
         {
-            log(s, "errno == ENOTCONN: The socket is not connected, and no target has been given.\n");
+            sn_log(s, "errno == ENOTCONN: The socket is not connected, and no target has been given.\n");
             break;
         }
         case ENOTSOCK:
         {
-            log(s, "errno == ENOTSOCK: The argument sockfd is not a socket.\n");
+            sn_log(s, "errno == ENOTSOCK: The argument sockfd is not a socket.\n");
             break;
         }
         case EOPNOTSUPP:
         {
-            log(s, "errno == EOPNOTSUPP: Some bit in the flags argument is inappropriate for the socket type.\n");
+            sn_log(s, "errno == EOPNOTSUPP: Some bit in the flags argument is inappropriate for the socket type.\n");
             break;
         }
         case EPIPE:
         {
-            log(s, "errno == EPIPE: The local end has been shut down on a connection oriented socket. In this case the process will also receive a SIGPIPE unless MSG_NOSIGNAL is set.\n");
+            sn_log(s, "errno == EPIPE: The local end has been shut down on a connection oriented socket. In this case the process will also receive a SIGPIPE unless MSG_NOSIGNAL is set.\n");
             break;
         }
         case ENOPROTOOPT:
         {
-            log(s, "errno == ENOPROTOOPT: Protocol not available.\n");
+            sn_log(s, "errno == ENOPROTOOPT: Protocol not available.\n");
             break;
         }
         case ETIMEDOUT:
         {
-            log(s, "errno == ETIMEDOUT\n");
+            sn_log(s, "errno == ETIMEDOUT\n");
             break;
         }
         default:
         {
-            log(s, "errno == %d.\n", error);
+            sn_log(s, "errno == %d.\n", error);
         }
     }
     
@@ -305,7 +305,7 @@ int stfSocket_connect(stfSocket* s,
                 }
                 else
                 {
-                    //log(s, "select() following non blocking connect() failed, errno %d\n", errno);
+                    //sn_log(s, "select() following non blocking connect() failed, errno %d\n", errno);
                     s->fileDescriptor = -1;
                     break;
                 }
@@ -338,9 +338,9 @@ int stfSocket_connect(stfSocket* s,
     assert(result == 0);
     
     //disable sigpipe
-    int set = 1;
-    result = setsockopt(s->fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
-    assert(result == 0);
+//    int set = 1;
+//    result = setsockopt(s->fileDescriptor, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+//    assert(result == 0);
     
     return 1;
    
