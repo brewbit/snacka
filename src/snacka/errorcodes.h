@@ -45,6 +45,8 @@ extern "C"
     {
         /** Success. */
         SN_NO_ERROR = 0,
+        /* Invalid arguments were provided */
+        SN_BAD_ARGS,
         /** A non zero masking key was expected. */
         SN_MASKING_KEY_IS_ZERO,
         /** The maximum payload size of a control frame was exceeded. */
@@ -53,8 +55,6 @@ extern "C"
         SN_NON_FINAL_CONTROL_FRAME,
         /** Encountered an invalid opcode. */
         SN_INVALID_OPCODE,
-        /** Failed to parse a URL. */
-        SN_INVALID_URL,
         /** Encountered invalid UTF-8 data. */
         SN_INVALID_UTF8,
         /** Received an unexpected continuation frame. */

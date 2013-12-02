@@ -31,8 +31,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include <uriparser/Uri.h>
-
 #include "backends/bsdsocket/iocallbacks_socket.h"
 #include "websocket.h"
 #include "openinghandshakeparser.h"
@@ -60,14 +58,12 @@ struct snWebsocket
     snIOCallbacks ioCallbacks;
     /** The object to pass to the I/O callbacks, e.g a socket. */
     void* ioObject;
-    /** The URI scheme. */
-    snMutableString uriScheme;
     /** The host. */
     snMutableString host;
     /** The port. */
     int port;
     /** The http request path, used in the websocket opening handshake request. */
-    snMutableString pathTail;
+    snMutableString path;
     /** */
     snMutableString query;
     /** The maximum size of a frame, i.e header + payload. */
@@ -465,9 +461,8 @@ void snWebsocket_delete(snWebsocket* ws)
     snFrameParser_deinit(&ws->frameParser);
     snOpeningHandshakeParser_deinit(&ws->openingHandshakeParser);
     
-    snMutableString_deinit(&ws->uriScheme);
     snMutableString_deinit(&ws->host);
-    snMutableString_deinit(&ws->pathTail);
+    snMutableString_deinit(&ws->path);
     snMutableString_deinit(&ws->query);
     
     free(ws->readBuffer);
@@ -475,22 +470,6 @@ void snWebsocket_delete(snWebsocket* ws)
     free(ws->writeChunkBuffer);
 
     free(ws);
-}
-
-static int getPort(UriUriA* uri)
-{
-    char portTemp[256];
-    const long portLength = uri->portText.afterLast - uri->portText.first;
-    if (portLength == 0)
-    {
-        return -1;
-    }
-    
-    memcpy(portTemp, uri->portText.first, portLength);
-    portTemp[portLength] = '\0';
-    int port = (int)strtol(portTemp, NULL, 10);
-    
-    return port;
 }
 
 static void sendOpeningHandshake(snWebsocket* ws)
@@ -501,7 +480,7 @@ static void sendOpeningHandshake(snWebsocket* ws)
     snOpeningHandshakeParser_createOpeningHandshakeRequest(&ws->openingHandshakeParser,
                                                            snMutableString_getString(&ws->host),
                                                            ws->port,
-                                                           snMutableString_getString(&ws->pathTail),
+                                                           snMutableString_getString(&ws->path),
                                                            snMutableString_getString(&ws->query),
                                                            &req);
     
@@ -517,11 +496,13 @@ static void sendOpeningHandshake(snWebsocket* ws)
     snMutableString_deinit(&req);
 }
 
-snError snWebsocket_connect(snWebsocket* ws, const char* url)
+snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path, const char* query, int port)
 {
-    snMutableString_deinit(&ws->uriScheme);
+    if (host == NULL)
+      return SN_BAD_ARGS;
+
     snMutableString_deinit(&ws->host);
-    snMutableString_deinit(&ws->pathTail);
+    snMutableString_deinit(&ws->path);
     snMutableString_deinit(&ws->query);
     
     snFrameParser_reset(&ws->frameParser);
@@ -529,50 +510,21 @@ snError snWebsocket_connect(snWebsocket* ws, const char* url)
     
     invokeStateCallback(ws, SN_STATE_CONNECTING);
     
-    //parse the url
-    UriParserStateA state;
-    UriUriA uri;
-  
-    state.uri = &uri;
-    if (uriParseUriA(&state, url) != URI_SUCCESS)
+    ws->port = port;
+    snMutableString_append(&ws->host, host);
+
+    if (path != NULL)
+        snMutableString_append(&ws->path, path);
+
+    if (query != NULL)
+        snMutableString_append(&ws->query, query);
+        
+    if (ws->port < 0)
     {
-        //parsing failed
-        uriFreeUriMembersA(&uri);
-        return SN_INVALID_URL;
+        //no port given in the url. use default port 80
+        ws->port = 80;
     }
-    else
-    {
-        //parsing succeeded
         
-        ws->port = getPort(&uri);
-        
-        const long hostLength = uri.hostText.afterLast - uri.hostText.first;
-        snMutableString_appendBytes(&ws->host, uri.hostText.first, hostLength);
-        
-        const long schemeLength = uri.scheme.afterLast - uri.scheme.first;
-        snMutableString_appendBytes(&ws->uriScheme, uri.scheme.first, schemeLength);
-        
-        long tailLength = 0;
-        if (uri.pathTail)
-        {            
-            tailLength = uri.pathTail->text.afterLast - uri.pathTail->text.first;
-            snMutableString_appendBytes(&ws->pathTail, uri.pathTail->text.first, tailLength);
-        }
-        
-        const long queryLength = uri.query.afterLast - uri.query.first;
-        snMutableString_appendBytes(&ws->query, uri.query.first, queryLength);
-        
-        if (ws->port < 0)
-        {
-            //no port given in the url. use default port 80
-            ws->port = 80;
-        }
-        
-        //printf("scheme '%s', host '%s', port '%d'\n", ws->uriScheme, ws->host, ws->port);
-        
-        uriFreeUriMembersA(&uri);
-    }
-    
     snError e = ws->ioCallbacks.connectCallback(ws->ioObject,
                                                 snMutableString_getString(&ws->host),
                                                 ws->port,

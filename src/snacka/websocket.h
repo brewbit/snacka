@@ -288,7 +288,7 @@ extern "C"
      * @param url The URL to connect to.
      * @return An error code.
      */
-    snError snWebsocket_connect(snWebsocket* ws, const char* url);
+    snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path, const char* query, int port);
     
     /**
      * Disconnect from the current host, if any.

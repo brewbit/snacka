@@ -2,7 +2,6 @@
 WITH_BACKEND ?= YES
 
 LIB_SRC = $(wildcard src/snacka/*.c) \
-          $(wildcard src/external/uriparser/*.c) \
           $(wildcard src/external/http_parser/*.c)
 
 ifeq ($(WITH_BACKEND),YES)

@@ -98,13 +98,10 @@ int main(int argc, const char* argv[])
     
     const int pollDurationMs = 1;
     const char* agentName = "snacka";
-    const char* baseURL = "ws://localhost:9001/";
     
     //fetch test case count
     {
-        char caseCountURL[1024];
-        sprintf(caseCountURL, "%s%s", baseURL, "getCaseCount");
-        snWebsocket_connect(ws, caseCountURL);
+        snWebsocket_connect(ws, "localhost", "getCaseCount", NULL, 9001);
         
         printf("Fetching test count...\n");
         printf("----------------------\n");
@@ -129,11 +126,11 @@ int main(int argc, const char* argv[])
             //form the URL of the current test and connect
             char testCaseURL[1024];
             const int testNumber = i + 1;
-            sprintf(testCaseURL, "%srunCase?case=%d&agent=%s", baseURL, testNumber, agentName);
-            snWebsocket_connect(ws, testCaseURL);
+            sprintf(testCaseURL, "case=%d&agent=%s", testNumber, agentName);
+            snWebsocket_connect(ws, "localhost", "runCase", testCaseURL, 9001);
             
             //run the test
-            printf("Running test %d/%d, %s\n", testNumber, test.testCount, testCaseURL);
+            printf("Running test %d/%d, ws://localhost:9001/runCase%s\n", testNumber, test.testCount, testCaseURL);
             while (snWebsocket_getState(ws) != SN_STATE_CLOSED)
             {
                 snWebsocket_poll(ws);
@@ -150,8 +147,8 @@ int main(int argc, const char* argv[])
         printf("----------------------\n");
         
         char updateReportsURL[1024];
-        sprintf(updateReportsURL, "%supdateReports?agent=%s", baseURL, agentName);
-        snWebsocket_connect(ws, updateReportsURL);
+        sprintf(updateReportsURL, "agent=%s", agentName);
+        snWebsocket_connect(ws, "localhost", "updateReports", updateReportsURL, 9001);
         while (snWebsocket_getState(ws) != SN_STATE_CLOSED)
         {
             snWebsocket_poll(ws);
