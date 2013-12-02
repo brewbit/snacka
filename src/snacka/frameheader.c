@@ -33,29 +33,6 @@
 #include <stdlib.h>
 #include "frame.h"
 
-static const char* opcodeToString(snOpcode o)
-{
-    switch (o)
-    {
-        case SN_OPCODE_TEXT:
-            return "Text";
-        case SN_OPCODE_BINARY:
-            return "Binary";
-        case SN_OPCODE_PING:
-            return "Ping";
-        case SN_OPCODE_PONG:
-            return "Pong";
-        case SN_OPCODE_CONTINUATION:
-            return "Continuation";
-        case SN_OPCODE_CONNECTION_CLOSE:
-            return "Connection close";
-        default:
-        {
-            assert(0 && "invalid opcode");
-            return "INVALID OPCODE";
-        }
-    }
-}
 
 static int isOpcodeValid(snOpcode oc)
 {
@@ -288,6 +265,30 @@ snError snFrameHeader_applyMask(snFrameHeader* h, char* payload, int numBytes, i
     return SN_NO_ERROR;
 }
 
+#ifdef DEBUG
+static const char* opcodeToString(snOpcode o)
+{
+    switch (o)
+    {
+        case SN_OPCODE_TEXT:
+            return "Text";
+        case SN_OPCODE_BINARY:
+            return "Binary";
+        case SN_OPCODE_PING:
+            return "Ping";
+        case SN_OPCODE_PONG:
+            return "Pong";
+        case SN_OPCODE_CONTINUATION:
+            return "Continuation";
+        case SN_OPCODE_CONNECTION_CLOSE:
+            return "Connection close";
+        default:
+        {
+            assert(0 && "invalid opcode");
+            return "INVALID OPCODE";
+        }
+    }
+}
 
 void snFrameHeader_log(const snFrameHeader* h)
 {
@@ -307,4 +308,4 @@ void snFrameHeader_log(const snFrameHeader* h)
         printf("not masked\n");
     }
 }
-
+#endif

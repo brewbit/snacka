@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include "frame.h"
 
+#ifdef DEBUG
 void snFrame_log(const snFrame* frame)
 {
     snFrameHeader_log(&frame->header);
@@ -45,3 +46,4 @@ void snFrame_log(const snFrame* frame)
     
     printf("\n");
 }
+#endif

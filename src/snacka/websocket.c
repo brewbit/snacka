@@ -109,9 +109,8 @@ static void sn_log(snWebsocket* sn, const char* message, ...)
     {
         va_list args;
         va_start(args, message);
-        vprintf(message, args); //TODO: actually use log callback
+        sn->logCallback(message, args);
         va_end(args);
-
     }
 }
 
