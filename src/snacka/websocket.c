@@ -40,6 +40,8 @@
 
 #include "frame.h"
 #include <stdarg.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define SN_DEFAULT_MAX_FRAME_SIZE 1 << 16
 
