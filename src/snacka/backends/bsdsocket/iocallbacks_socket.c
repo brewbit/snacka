@@ -94,3 +94,13 @@ snError snSocketWriteCallback(void* userData,
     
     return success ? SN_NO_ERROR : SN_SOCKET_IO_ERROR;
 }
+
+float snSocketTimeCallback()
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+
+  float time = tv.tv_sec + tv.tv_usec / 1000000.0f;
+
+  return time;
+}

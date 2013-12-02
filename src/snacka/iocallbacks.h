@@ -85,6 +85,8 @@ extern "C"
                                          int* numBytesWritten,
                                          snIOCancelCallback cancelCallback);
     
+    typedef float (*snTimeCallback)(void);
+
     /**
      * A set of callbacks representing operations on a custom IO object, e.g a socket.
      */
@@ -102,7 +104,9 @@ extern "C"
         snIOReadCallback readCallback;
         /** */
         snIOWriteCallback writeCallback;
-        
+        /** */
+        snTimeCallback timeCallback;
+
     } snIOCallbacks;
     
     

@@ -206,7 +206,7 @@ static void sendCloseFrame(snWebsocket* ws, snStatusCode code)
     }
     
     ws->closingHandshakeTimer = 0.0f;
-    
+
     char payload[2] = { (code >> 8) , (code >> 0) };
     
     snWebsocket_sendFrame(ws, SN_OPCODE_CONNECTION_CLOSE, 2, payload);
@@ -354,6 +354,7 @@ static void setDefaultIOCallbacks(snIOCallbacks* ioc)
     ioc->initCallback = snSocketInitCallback;
     ioc->readCallback = snSocketReadCallback;
     ioc->writeCallback = snSocketWriteCallback;
+    ioc->timeCallback = snSocketTimeCallback;
 }
 
 snWebsocket* snWebsocket_create(snOpenCallback openCallback,
@@ -608,17 +609,14 @@ void snWebsocket_poll(snWebsocket* ws)
     {
         return;
     }
-    
+
     //update timer
     {
         int firstPoll = ws->prevPollTime == 0.0f;
-        
-        struct timeval time;
-        gettimeofday(&time, NULL);
-        
-        const double newPollTime = time.tv_sec + time.tv_usec / 1000000.0;
+
+        const double newPollTime = ws->ioCallbacks.timeCallback();
         const double dt = newPollTime - ws->prevPollTime;
-        
+
         if (!firstPoll)
         {
             if (ws->hasSentCloseFrame)
@@ -630,10 +628,10 @@ void snWebsocket_poll(snWebsocket* ws)
                 }
             }
         }
-        
+
         ws->prevPollTime = newPollTime;
     }
-    
+
     int numBytesRead = 0;
     char readBytes[1024];
     snError e = ws->ioCallbacks.readCallback(ws->ioObject,
