@@ -57,7 +57,9 @@ static int countCodePoints(const char* s, size_t* count)
 
 int snUTF8ValidateStringIncremental(const char* firstByte, int numBytes, uint32_t* state)
 {
-    for (int i = 0; i < numBytes; i++)
+    int i;
+
+    for (i = 0; i < numBytes; i++)
     {
         uint32_t codepoint;
         if (decode(state, &codepoint, firstByte[i]) == UTF8_REJECT)

@@ -43,6 +43,8 @@ static const char* HTTP_WS_EXTENSIONS_NAME = "Sec-WebSocket-Extensions";
 
 static int stringStartsWith(const char* haystack, int haystackLen, const char* needle, int needleLen)
 {
+    int i;
+
     if (haystackLen < needleLen)
     {
         return 0;
@@ -50,7 +52,7 @@ static int stringStartsWith(const char* haystack, int haystackLen, const char* n
     
     const int minLen = haystackLen < needleLen ? haystackLen : needleLen;
     
-    for (int i = 0; i < minLen; i++)
+    for (i = 0; i < minLen; i++)
     {
         if (haystack[i] != needle[i])
         {
@@ -243,6 +245,8 @@ void snOpeningHandshakeParser_createOpeningHandshakeRequest(snOpeningHandshakePa
 
 static snError validateResponse(snOpeningHandshakeParser* p)
 {
+    int i;
+
     /*http://tools.ietf.org/html/rfc6455#section-4.1*/
     assert(p->reachedHeaderEnd);
     
@@ -274,7 +278,7 @@ static snError validateResponse(snOpeningHandshakeParser* p)
             }
             else
             {
-                for (int i = 0;  i < strlen(upgrVal); i++)
+                for (i = 0;  i < strlen(upgrVal); i++)
                 {
                     if (upgrVal[i] != comp[0][i] &&
                         upgrVal[i] != comp[1][i])
@@ -308,7 +312,7 @@ static snError validateResponse(snOpeningHandshakeParser* p)
             }
             else
             {
-                for (int i = 0;  i < strlen(connVal); i++)
+                for (i = 0;  i < strlen(connVal); i++)
                 {
                     if (connVal[i] != comp[0][i] &&
                         connVal[i] != comp[1][i])

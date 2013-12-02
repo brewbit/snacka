@@ -73,6 +73,8 @@ static int isControlOpcode(snOpcode oc)
 
 snError snFrameHeader_toBytes(snFrameHeader* h, char* headerBytes, int* headerSize)
 {
+    int i;
+
     if (headerSize)
     {
         *headerSize = 0;
@@ -98,7 +100,7 @@ snError snFrameHeader_toBytes(snFrameHeader* h, char* headerBytes, int* headerSi
     else if (h->payloadSize < 1 << 16)
     {
         bytes[writeIdx++] = (h->isMasked << 7) | 126;
-        for (int i = 0; i < 2; i++)
+        for (i = 0; i < 2; i++)
         {
             bytes[writeIdx++] = (h->payloadSize >> ((1 - i) * 8));
         }
@@ -106,7 +108,7 @@ snError snFrameHeader_toBytes(snFrameHeader* h, char* headerBytes, int* headerSi
     else
     {
         bytes[writeIdx++] = (h->isMasked << 7) | 127;
-        for (int i = 0; i < 8; i++)
+        for (i = 0; i < 8; i++)
         {
             bytes[writeIdx++] = (h->payloadSize >> ((7 - i) * 8));
         }
@@ -114,7 +116,7 @@ snError snFrameHeader_toBytes(snFrameHeader* h, char* headerBytes, int* headerSi
     
     if (h->isMasked)
     {
-        for (int i = 0; i < 4; i++)
+        for (i = 0; i < 4; i++)
         {
             bytes[writeIdx++] = maskBytes[3 - i];
         }
@@ -132,6 +134,8 @@ snError snFrameHeader_fromBytes(snFrameHeader* h,
                                 const char* headerBytes,
                                 int* headerSize)
 {
+    int i;
+
     memset(h, 0, sizeof(snFrameHeader));
     
     if (headerSize)
@@ -161,7 +165,7 @@ snError snFrameHeader_fromBytes(snFrameHeader* h,
     if (payloadSize == 126)
     {
         //the payload size is given by the next 2 bytes
-        for (int i = 0; i < 2; i++)
+        for (i = 0; i < 2; i++)
         {
             h->payloadSize |= (((unsigned char*)headerBytes)[readIdx++] << ((1 - i) * 8));
         }
@@ -169,7 +173,7 @@ snError snFrameHeader_fromBytes(snFrameHeader* h,
     else if (payloadSize == 127)
     {
         //the payload size is given by the next 8 bytes
-        for (int i = 0; i < 8; i++)
+        for (i = 0; i < 8; i++)
         {
             h->payloadSize |= (((unsigned char*)headerBytes)[readIdx++] << ((7 - i) * 8));
         }
@@ -183,7 +187,7 @@ snError snFrameHeader_fromBytes(snFrameHeader* h,
     //read masking key if the frame is masked
     if (h->isMasked)
     {
-        for (int i = 0; i < 4; i++)
+        for (i = 0; i < 4; i++)
         {
             h->maskingKey |= (((unsigned char*)headerBytes)[readIdx++] << ((3 - i) * 8));
         }
@@ -243,6 +247,8 @@ snError snFrameHeader_validate(const snFrameHeader* h)
 
 snError snFrameHeader_applyMask(snFrameHeader* h, char* payload, int numBytes, int offset)
 {
+    int i;
+
     if (h->isMasked == 0)
     {
         return SN_NO_ERROR;
@@ -257,7 +263,7 @@ snError snFrameHeader_applyMask(snFrameHeader* h, char* payload, int numBytes, i
     
     //apply the mask to the payload
     unsigned char* maskBytes = (unsigned char*)(&h->maskingKey);
-    for (int i = 0; i < numBytes; i++)
+    for (i = 0; i < numBytes; i++)
     {
         payload[i] = payload[i] ^ maskBytes[3 - ((i + offset) % 4)];
     }

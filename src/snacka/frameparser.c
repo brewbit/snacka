@@ -241,6 +241,7 @@ snError snFrameParser_processBytes(snFrameParser* parser,
                                    const char* bytes,
                                    int numBytes)
 {
+    int i;
     //https://tools.ietf.org/html/rfc6455#section-5.2
     
     int currentSrcByte = 0;
@@ -319,7 +320,7 @@ snError snFrameParser_processBytes(snFrameParser* parser,
                     }
                     else if (parser->numPayloadSizeBytes == 8)
                     {
-                        for (int i = 0; i < 8; i++)
+                        for (i = 0; i < 8; i++)
                         {
                             parser->currentFrameHeader.payloadSize |= (((unsigned char*)parser->payloadSizeBytes)[i] << ((7 - i) * 8));
                         }
@@ -343,7 +344,7 @@ snError snFrameParser_processBytes(snFrameParser* parser,
                     parser->maskingKeyBytes[idx] = bytes[currentSrcByte];
                     if (idx == 3)
                     {
-                        for (int i = 0; i < 4; i++)
+                        for (i = 0; i < 4; i++)
                         {
                             parser->currentFrameHeader.maskingKey |= ((unsigned char*)parser->maskingKeyBytes)[i] << (3 - i) * 8;
                         }

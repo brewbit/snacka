@@ -363,23 +363,12 @@ snWebsocket* snWebsocket_create(snOpenCallback openCallback,
                                 snErrorCallback errorCallback,
                                 void* callbackData)
 {
-    snIOCallbacks ioc;
-    memset(&ioc, 0, sizeof(snIOCallbacks));
-    
-    setDefaultIOCallbacks(&ioc);
-    
-    snWebsocketSettings s;
-    s.frameCallback = NULL;
-    s.ioCallbacks = &ioc;
-    s.logCallback = NULL;
-    s.maxFrameSize = 0;
-    
     return snWebsocket_createWithSettings(openCallback,
                                           messageCallback,
                                           closeCallback,
                                           errorCallback,
                                           callbackData,
-                                          &s);
+                                          NULL);
 }
 
 snWebsocket* snWebsocket_createWithSettings(snOpenCallback openCallback,
@@ -389,58 +378,59 @@ snWebsocket* snWebsocket_createWithSettings(snOpenCallback openCallback,
                                             void* callbackData,
                                             snWebsocketSettings* settings)
 {
-    snIOCallbacks ioCallbacksFallback;
-    setDefaultIOCallbacks(&ioCallbacksFallback);
-    snIOCallbacks* ioCallbacks = settings->ioCallbacks == NULL ? &ioCallbacksFallback : settings->ioCallbacks;
-    
     snWebsocket* ws = (snWebsocket*)malloc(sizeof(snWebsocket));
     memset(ws, 0, sizeof(snWebsocket));
-    memcpy(&ws->ioCallbacks, ioCallbacks, sizeof(snIOCallbacks));
+
+    if (settings == NULL || settings->ioCallbacks == NULL)
+      setDefaultIOCallbacks(&ws->ioCallbacks);
+    else
+      memcpy(&ws->ioCallbacks, settings->ioCallbacks, sizeof(snIOCallbacks));
+
     ws->ioCallbacks.initCallback(&ws->ioObject);
-    
+
     ws->callbackData = callbackData;
     ws->openCallback = openCallback;
     ws->closeCallback = closeCallback;
     ws->errorCallback = errorCallback;
-    
+
     ws->maxFrameSize = SN_DEFAULT_MAX_FRAME_SIZE;
-    
+
     ws->websocketState = SN_STATE_CLOSED;
-    
+
     ws->logCallback = snSilentLogCallback;
-    
+
     if (settings)
     {
         if (settings->maxFrameSize != 0)
         {
             ws->maxFrameSize = settings->maxFrameSize;
         }
-                
+
         if (settings->logCallback)
         {
             ws->logCallback = settings->logCallback;
         }
-        
+
         if (settings->frameCallback)
         {
             ws->frameCallback = settings->frameCallback;
         }
-        
+
         if (settings->cancelCallback)
         {
             ws->cancelCallback = settings->cancelCallback;
         }
     }
-    
+
     if (ws->readBuffer == 0)
     {
         ws->readBuffer = malloc(ws->maxFrameSize);
         memset(ws->readBuffer, 0, ws->maxFrameSize);
     }
-    
+
     ws->writeChunkSize = SN_DEFAULT_WRITE_CHUNK_SIZE;
     ws->writeChunkBuffer = malloc(ws->writeChunkSize);
-        
+
     snFrameParser_init(&ws->frameParser,
                        invokeFrameCallback,
                        ws,
@@ -605,6 +595,8 @@ static void handlePaserResult(snWebsocket* ws, snError error)
 
 void snWebsocket_poll(snWebsocket* ws)
 {
+    int i;
+
     if (ws->websocketState == SN_STATE_CLOSED)
     {
         return;
@@ -654,7 +646,7 @@ void snWebsocket_poll(snWebsocket* ws)
     {
         sn_log(ws, "bytes from socket:\n");
         sn_log(ws, "-----------------------\n");
-        for (int i = 0; i < numBytesRead; i++)
+        for (i = 0; i < numBytesRead; i++)
         {
             sn_log(ws, "%c", readBytes[i]);
         }
