@@ -30,6 +30,7 @@
 #include "../../websocket.h"
 #include "iocallbacks_socket.h"
 #include "socket.h"
+#include <sys/time.h>
 
 snError snSocketInitCallback(void** socket)
 {
