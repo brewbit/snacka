@@ -26,9 +26,10 @@ void snMutableString_append(snMutableString* ms, const char* toAppend)
 
 void snMutableString_appendInt(snMutableString* ms, int toApped)
 {
-    char temp[256];
+    char* temp = malloc(256);
     sprintf(temp, "%d", toApped);
     snMutableString_append(ms, temp);
+    free(temp);
 }
 
 void snMutableString_appendBytes(snMutableString* ms, const char* toAppend, int numBytes)

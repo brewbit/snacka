@@ -100,7 +100,8 @@ struct snWebsocket
     snLogCallback logCallback;
     /** */
     double prevPollTime;
-    
+    /** */
+    char recvBuffer[1024];
 };
 
 static void sn_log(snWebsocket* sn, const char* message, ...)
@@ -328,13 +329,14 @@ void invokeFrameCallback(void* data, const snFrame* frame)
             }
             
             const int messageSize = frame->header.payloadSize - 2;
-            char temp[256];
+            char* temp = malloc(messageSize + 1);
             memcpy(temp, &frame->payload[2], messageSize);
             temp[messageSize] = '\0';
             if (!snUTF8ValidateString(temp))
             {
                 closeCode = SN_STATUS_INCONSISTENT_DATA;
             }
+            free(temp);
         }
         
         sendCloseFrame(ws, closeCode);
@@ -466,17 +468,17 @@ void snWebsocket_delete(snWebsocket* ws)
 
 static void sendOpeningHandshake(snWebsocket* ws)
 {
-    snMutableString req;
-    snMutableString_init(&req);
+    snMutableString* req = malloc(sizeof(snMutableString));
+    snMutableString_init(req);
     
     snOpeningHandshakeParser_createOpeningHandshakeRequest(&ws->openingHandshakeParser,
                                                            snMutableString_getString(&ws->host),
                                                            ws->port,
                                                            snMutableString_getString(&ws->path),
                                                            snMutableString_getString(&ws->query),
-                                                           &req);
+                                                           req);
     
-    const char* reqStr = snMutableString_getString(&req);
+    const char* reqStr = snMutableString_getString(req);
     
     int numBytesWritten = 0;
     ws->ioCallbacks.writeCallback(ws->ioObject,
@@ -485,7 +487,8 @@ static void sendOpeningHandshake(snWebsocket* ws)
                                   &numBytesWritten,
                                   ws->cancelCallback);
     
-    snMutableString_deinit(&req);
+    snMutableString_deinit(req);
+    free(req);
 }
 
 snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path, const char* query, int port)
@@ -625,9 +628,8 @@ void snWebsocket_poll(snWebsocket* ws)
     }
 
     int numBytesRead = 0;
-    char readBytes[1024];
     snError e = ws->ioCallbacks.readCallback(ws->ioObject,
-                                             readBytes,
+                                             ws->recvBuffer,
                                              1024,
                                              &numBytesRead);
     
@@ -648,7 +650,7 @@ void snWebsocket_poll(snWebsocket* ws)
         sn_log(ws, "-----------------------\n");
         for (i = 0; i < numBytesRead; i++)
         {
-            sn_log(ws, "%c", readBytes[i]);
+            sn_log(ws, "%c", ws->recvBuffer[i]);
         }
         
         sn_log(ws, "\n-----------------------\n");
@@ -661,13 +663,13 @@ void snWebsocket_poll(snWebsocket* ws)
         int done = 0;
         //printf("hasCompletedOpeningHandshake %d\n", ws->hasCompletedOpeningHandshake);
         snError result = snOpeningHandshakeParser_processBytes(&ws->openingHandshakeParser,
-                                                               readBytes,
+                                                               ws->recvBuffer,
                                                                numBytesRead,
                                                                &readOffset,
                                                                &done);
         
         ws->hasCompletedOpeningHandshake = done;
-        //printf("first character after header %c. after header '%s'\n", readBytes[readOffset], &readBytes[readOffset]);
+        //printf("first character after header %c. after header '%s'\n", ws->recvBuffer[readOffset], &ws->recvBuffer[readOffset]);
         
         if (result != SN_NO_ERROR)
         {
@@ -689,7 +691,7 @@ void snWebsocket_poll(snWebsocket* ws)
     if (ws->hasCompletedOpeningHandshake && readOffset < numBytesRead)
     {
         snError result = snFrameParser_processBytes(&ws->frameParser,
-                                                    &readBytes[readOffset],
+                                                    &ws->recvBuffer[readOffset],
                                                     numBytesRead - readOffset);
         handlePaserResult(ws, result);
     }
