@@ -104,6 +104,12 @@ struct snWebsocket
     char recvBuffer[1024];
 };
 
+
+static int generateMaskingKey(void);
+
+static void disconnectWithStatus(snWebsocket* ws, snStatusCode status, snError error);
+
+
 static void sn_log(snWebsocket* sn, const char* message, ...)
 {
     if (sn->logCallback)
@@ -115,7 +121,6 @@ static void sn_log(snWebsocket* sn, const char* message, ...)
     }
 }
 
-static void disconnectWithStatus(snWebsocket* ws, snStatusCode status, snError error);
 
 static int generateMaskingKey()
 {
