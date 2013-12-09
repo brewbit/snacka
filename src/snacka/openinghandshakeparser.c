@@ -31,6 +31,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
+
 #include "openinghandshakeparser.h"
 #include "websocket.h"
 
@@ -54,7 +56,7 @@ static int stringStartsWith(const char* haystack, int haystackLen, const char* n
     
     for (i = 0; i < minLen; i++)
     {
-        if (haystack[i] != needle[i])
+        if (tolower(haystack[i]) != tolower(needle[i]))
         {
             return 0;
         }
