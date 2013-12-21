@@ -43,9 +43,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define SN_DEFAULT_MAX_FRAME_SIZE 1024
+#define SN_DEFAULT_MAX_FRAME_SIZE 2048
 
-#define SN_DEFAULT_WRITE_CHUNK_SIZE 1024
+#define SN_DEFAULT_WRITE_CHUNK_SIZE 2048
 
 #define SN_CLOSING_HANDSHAKE_TIMEOUT 2.0 //in seconds
 
