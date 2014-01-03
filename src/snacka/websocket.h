@@ -50,6 +50,11 @@ extern "C"
     
     typedef struct snWebsocket snWebsocket;
 
+    typedef struct {
+      char* name;
+      char* value;
+    } snHTTPHeader;
+
     /**
      * @name Constants
      */
@@ -288,7 +293,7 @@ extern "C"
      * @param url The URL to connect to.
      * @return An error code.
      */
-    snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path, const char* query, int port);
+    snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path, const char* query, int port, snHTTPHeader* headers, int numHeaders);
     
     /**
      * Disconnect from the current host, if any.

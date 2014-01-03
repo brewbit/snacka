@@ -162,7 +162,7 @@ static void generateKey(snMutableString* key)
     snMutableString_append(key, "x3JJHMbDL1EzLkh9GBhXDw==");
 }
 
-void snOpeningHandshakeParser_init(snOpeningHandshakeParser* p)
+void snOpeningHandshakeParser_init(snOpeningHandshakeParser* p, snHTTPHeader* extraHeaders, int numExtraHeaders)
 {
     memset(p, 0, sizeof(snOpeningHandshakeParser));
     
@@ -178,6 +178,9 @@ void snOpeningHandshakeParser_init(snOpeningHandshakeParser* p)
     p->httpParser.data = p;
     
     p->currentHeaderField = SN_UNRECOGNIZED_HTTP_FIELD;
+
+    p->extraHeaders = extraHeaders;
+    p->numExtraHeaders = numExtraHeaders;
 
     snMutableString_init(&p->acceptValue);
     snMutableString_init(&p->connectionValue);
@@ -204,6 +207,7 @@ void snOpeningHandshakeParser_createOpeningHandshakeRequest(snOpeningHandshakePa
                                                             const char* queryString,
                                                             snMutableString* request)
 {
+    int i;
     const int queryLength = strlen(queryString);
     
     //GET
@@ -242,6 +246,15 @@ void snOpeningHandshakeParser_createOpeningHandshakeRequest(snOpeningHandshakePa
     
     //Version
     snMutableString_append(request, "Sec-WebSocket-Version: 13\r\n");
+
+    //Extra Headers
+    for (i = 0; i < parser->numExtraHeaders; ++i) {
+      snMutableString_append(request, parser->extraHeaders[i].name);
+      snMutableString_append(request, ":");
+      snMutableString_append(request, parser->extraHeaders[i].value);
+      snMutableString_append(request, "\r\n");
+    }
+
     snMutableString_append(request, "\r\n");
 }
 

@@ -35,6 +35,7 @@
 #include "errorcodes.h"
 #include "mutablestring.h"
 #include "../external/http_parser/http_parser.h"
+#include "websocket.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -83,13 +84,17 @@ extern "C"
         snMutableString protocolValue;
         /** */
         snMutableString extensionsValue;
+        /** */
+        int numExtraHeaders;
+        /** */
+        snHTTPHeader* extraHeaders;
     } snOpeningHandshakeParser;
 
     /**
      * Initializes a handshake response parser.
      * @param parser The parser to initialize.
      */
-    void snOpeningHandshakeParser_init(snOpeningHandshakeParser* parser);
+    void snOpeningHandshakeParser_init(snOpeningHandshakeParser* parser, snHTTPHeader* extraHeaders, int numExtraHeaders);
     
     /**
      *

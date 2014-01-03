@@ -496,7 +496,7 @@ static void sendOpeningHandshake(snWebsocket* ws)
     free(req);
 }
 
-snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path, const char* query, int port)
+snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path, const char* query, int port, snHTTPHeader* headers, int numHeaders)
 {
     if (host == NULL)
       return SN_BAD_ARGS;
@@ -506,7 +506,7 @@ snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path,
     snMutableString_deinit(&ws->query);
     
     snFrameParser_reset(&ws->frameParser);
-    snOpeningHandshakeParser_init(&ws->openingHandshakeParser);
+    snOpeningHandshakeParser_init(&ws->openingHandshakeParser, headers, numHeaders);
     
     invokeStateCallback(ws, SN_STATE_CONNECTING);
     
