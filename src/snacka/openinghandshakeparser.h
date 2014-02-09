@@ -75,6 +75,8 @@ extern "C"
         /** */
         int reachedHeaderEnd;
         /** */
+        snMutableString expectedAcceptValue;
+        /** */
         snMutableString acceptValue;
         /** */
         snMutableString connectionValue;
@@ -88,13 +90,15 @@ extern "C"
         int numExtraHeaders;
         /** */
         snHTTPHeader* extraHeaders;
+        /** */
+        snCryptoCallbacks* cryptoCallbacks;
     } snOpeningHandshakeParser;
 
     /**
      * Initializes a handshake response parser.
      * @param parser The parser to initialize.
      */
-    void snOpeningHandshakeParser_init(snOpeningHandshakeParser* parser, snHTTPHeader* extraHeaders, int numExtraHeaders);
+    void snOpeningHandshakeParser_init(snOpeningHandshakeParser* parser, snCryptoCallbacks* cryptoCallbacks, snHTTPHeader* extraHeaders, int numExtraHeaders);
     
     /**
      *

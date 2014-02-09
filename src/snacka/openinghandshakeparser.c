@@ -35,6 +35,7 @@
 
 #include "openinghandshakeparser.h"
 #include "websocket.h"
+#include "../external/base64/base64.h"
 
 
 static const char* HTTP_ACCEPT_FIELD_NAME = "Sec-WebSocket-Accept";
@@ -156,13 +157,41 @@ static int on_headers_complete(http_parser* p)
     return 0;
 }
 
-static void generateKey(snMutableString* key)
+static void generateKey(snOpeningHandshakeParser* p, snMutableString* keyStr)
 {
-    //TODO: randomize properly
-    snMutableString_append(key, "x3JJHMbDL1EzLkh9GBhXDw==");
+    uint8_t key[16];
+    char keyEnc[Base64encode_len(16)];
+    char acceptHashEnc[Base64encode_len(20)];
+
+    /* Generate a random 16-byte nonce */
+    p->cryptoCallbacks->randCallback(key, sizeof(key));
+
+    /* Base-64 encode it */
+    Base64encode(keyEnc, key, 16);
+
+    /* Copy it to the key string */
+    snMutableString_append(keyStr, keyEnc);
+
+    /* Calculate expected 'Sec-WebSocket-Accept' header returned from server */
+    snMutableString acceptKey;
+    snMutableString_init(&acceptKey);
+    snMutableString_append(&acceptKey, keyEnc);
+    snMutableString_append(&acceptKey, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+
+    uint8_t acceptHash[20];
+    char* acceptKeyStr = snMutableString_getString(&acceptKey);
+    p->cryptoCallbacks->shaCallback(acceptKeyStr, strlen(acceptKeyStr), acceptHash);
+    snMutableString_deinit(&acceptKey);
+
+    /* Base-64 encode it */
+    Base64encode(acceptHashEnc, acceptHash, 20);
+
+    /* Store the expected accept header value to compare with the server's response */
+    snMutableString_init(&p->expectedAcceptValue);
+    snMutableString_append(&p->expectedAcceptValue, acceptHashEnc);
 }
 
-void snOpeningHandshakeParser_init(snOpeningHandshakeParser* p, snHTTPHeader* extraHeaders, int numExtraHeaders)
+void snOpeningHandshakeParser_init(snOpeningHandshakeParser* p, snCryptoCallbacks* cryptoCallbacks, snHTTPHeader* extraHeaders, int numExtraHeaders)
 {
     memset(p, 0, sizeof(snOpeningHandshakeParser));
     
@@ -181,6 +210,8 @@ void snOpeningHandshakeParser_init(snOpeningHandshakeParser* p, snHTTPHeader* ex
 
     p->extraHeaders = extraHeaders;
     p->numExtraHeaders = numExtraHeaders;
+
+    p->cryptoCallbacks = cryptoCallbacks;
 
     snMutableString_init(&p->acceptValue);
     snMutableString_init(&p->connectionValue);
@@ -238,7 +269,7 @@ void snOpeningHandshakeParser_createOpeningHandshakeRequest(snOpeningHandshakePa
     
     snMutableString key;
     snMutableString_init(&key);
-    generateKey(&key);
+    generateKey(parser, &key);
     snMutableString_append(request, snMutableString_getString(&key));
     snMutableString_deinit(&key);
     
@@ -350,14 +381,9 @@ static snError validateResponse(snOpeningHandshakeParser* p)
     Connection_.
      */
     {
-        const char* accVal = snMutableString_getString(&p->acceptValue);
-        if (strlen(accVal) == 0)
-        {
-            result = SN_OPENING_HANDSHAKE_FAILED;
-        }
-        
-        //TODO: validate accept value
-        
+        if (strcmp(snMutableString_getString(&p->acceptValue),
+                   snMutableString_getString(&p->expectedAcceptValue)) != 0)
+          result = SN_OPENING_HANDSHAKE_FAILED;
     }
     
     /*

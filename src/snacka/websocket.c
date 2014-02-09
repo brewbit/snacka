@@ -31,7 +31,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include "backends/bsdsocket/iocallbacks_socket.h"
 #include "websocket.h"
 #include "openinghandshakeparser.h"
 #include "frameparser.h"
@@ -58,6 +57,8 @@ struct snWebsocket
     snFrameParser frameParser;
     /** A set of callbacks for I/O operation */
     snIOCallbacks ioCallbacks;
+    /** */
+    snCryptoCallbacks cryptoCallbacks;
     /** The object to pass to the I/O callbacks, e.g a socket. */
     void* ioObject;
     /** The host. */
@@ -353,45 +354,23 @@ void invokeFrameCallback(void* data, const snFrame* frame)
     }
 }
 
-static void setDefaultIOCallbacks(snIOCallbacks* ioc)
-{
-    ioc->connectCallback = snSocketConnectCallback;
-    ioc->deinitCallback = snSocketDeinitCallback;
-    ioc->disconnectCallback = snSocketDisconnectCallback;
-    ioc->initCallback = snSocketInitCallback;
-    ioc->readCallback = snSocketReadCallback;
-    ioc->writeCallback = snSocketWriteCallback;
-    ioc->timeCallback = snSocketTimeCallback;
-}
-
 snWebsocket* snWebsocket_create(snOpenCallback openCallback,
                                 snMessageCallback messageCallback,
                                 snCloseCallback closeCallback,
                                 snErrorCallback errorCallback,
-                                void* callbackData)
+                                void* callbackData,
+                                snWebsocketSettings* settings)
 {
-    return snWebsocket_createWithSettings(openCallback,
-                                          messageCallback,
-                                          closeCallback,
-                                          errorCallback,
-                                          callbackData,
-                                          NULL);
-}
+    if (settings == NULL ||
+        settings->ioCallbacks == NULL ||
+        settings->cryptoCallbacks == NULL)
+      return NULL;
 
-snWebsocket* snWebsocket_createWithSettings(snOpenCallback openCallback,
-                                            snMessageCallback messageCallback,
-                                            snCloseCallback closeCallback,
-                                            snErrorCallback errorCallback,
-                                            void* callbackData,
-                                            snWebsocketSettings* settings)
-{
     snWebsocket* ws = (snWebsocket*)malloc(sizeof(snWebsocket));
     memset(ws, 0, sizeof(snWebsocket));
 
-    if (settings == NULL || settings->ioCallbacks == NULL)
-      setDefaultIOCallbacks(&ws->ioCallbacks);
-    else
-      memcpy(&ws->ioCallbacks, settings->ioCallbacks, sizeof(snIOCallbacks));
+    memcpy(&ws->ioCallbacks, settings->ioCallbacks, sizeof(snIOCallbacks));
+    memcpy(&ws->cryptoCallbacks, settings->cryptoCallbacks, sizeof(snCryptoCallbacks));
 
     ws->ioCallbacks.initCallback(&ws->ioObject);
 
@@ -406,27 +385,24 @@ snWebsocket* snWebsocket_createWithSettings(snOpenCallback openCallback,
 
     ws->logCallback = snSilentLogCallback;
 
-    if (settings)
+    if (settings->maxFrameSize != 0)
     {
-        if (settings->maxFrameSize != 0)
-        {
-            ws->maxFrameSize = settings->maxFrameSize;
-        }
+        ws->maxFrameSize = settings->maxFrameSize;
+    }
 
-        if (settings->logCallback)
-        {
-            ws->logCallback = settings->logCallback;
-        }
+    if (settings->logCallback)
+    {
+        ws->logCallback = settings->logCallback;
+    }
 
-        if (settings->frameCallback)
-        {
-            ws->frameCallback = settings->frameCallback;
-        }
+    if (settings->frameCallback)
+    {
+        ws->frameCallback = settings->frameCallback;
+    }
 
-        if (settings->cancelCallback)
-        {
-            ws->cancelCallback = settings->cancelCallback;
-        }
+    if (settings->cancelCallback)
+    {
+        ws->cancelCallback = settings->cancelCallback;
     }
 
     if (ws->readBuffer == 0)
@@ -506,7 +482,7 @@ snError snWebsocket_connect(snWebsocket* ws, const char* host, const char* path,
     snMutableString_deinit(&ws->query);
     
     snFrameParser_reset(&ws->frameParser);
-    snOpeningHandshakeParser_init(&ws->openingHandshakeParser, headers, numHeaders);
+    snOpeningHandshakeParser_init(&ws->openingHandshakeParser, &ws->cryptoCallbacks, headers, numHeaders);
     
     invokeStateCallback(ws, SN_STATE_CONNECTING);
     

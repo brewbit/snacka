@@ -40,6 +40,7 @@
 #include "errorcodes.h"
 #include "frame.h"
 #include "iocallbacks.h"
+#include "cryptocallbacks.h"
 #include "logging.h"
 
 #ifdef __cplusplus
@@ -243,25 +244,11 @@ extern "C"
         snFrameCallback frameCallback;
         /** If NULL, default socket I/O is used. */
         snIOCallbacks* ioCallbacks;
+        /** */
+        snCryptoCallbacks* cryptoCallbacks;
         /** Gets called to see if time consuming I/O operations should be cancelled. Ignored if NULL. */
         snIOCancelCallback cancelCallback;
     } snWebsocketSettings;
-    
-    /**
-     * Creates a new web socket.
-     * @param openCallback A function to call when the opening handshake has been completed. Ignored if NULL.
-     * @param messageCallback A function to call when receiving pings, pongs or 
-     * full text or binary messages. Ignored if NULL.
-     * @param closeCallback A function to call when the websocket connection is closed. Ignored if NULL.
-     * @param errorCallback A function to call when an error occurs. Ignored if NULL.
-     * @param callbackData A pointer passed to \c openCallback, \c messageCallback, \c closeCallback and \c errorCallback.
-     * @return The created websocket or NULL on error.
-     */
-    snWebsocket* snWebsocket_create(snOpenCallback openCallback,
-                                    snMessageCallback messageCallback,
-                                    snCloseCallback closeCallback,
-                                    snErrorCallback errorCallback,
-                                    void* callbackData);
     
     /**
      * Initializes a web socket using custom settings.
@@ -274,7 +261,7 @@ extern "C"
      * @param settings Custom websocket settings.
      * @return The created websocket or NULL on error.
      */
-    snWebsocket* snWebsocket_createWithSettings(snOpenCallback openCallback,
+    snWebsocket* snWebsocket_create(snOpenCallback openCallback,
                                                 snMessageCallback messageCallback,
                                                 snCloseCallback closeCallback,
                                                 snErrorCallback errorCallback,
