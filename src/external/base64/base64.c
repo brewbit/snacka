@@ -123,7 +123,7 @@ int Base64decode_len(const char *bufcoded)
     return nbytesdecoded + 1;
 }
 
-int Base64decode(char *bufplain, const char *bufcoded)
+int Base64decode(uint8_t *bufplain, const char *bufcoded)
 {
     int nbytesdecoded;
     register const unsigned char *bufin;
@@ -171,7 +171,7 @@ int Base64decode(char *bufplain, const char *bufcoded)
 static const char basis_64[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-int Base64encode(char *encoded, const char *string, int len)
+int Base64encode(char *encoded, const uint8_t *string, int len)
 {
     int i;
     char *p;

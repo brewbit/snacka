@@ -32,7 +32,7 @@ void sha1_init(sha1nfo *s);
 void sha1_writebyte(sha1nfo *s, uint8_t data);
 /**
  */
-void sha1_write(sha1nfo *s, const char *data, size_t len);
+void sha1_write(sha1nfo *s, const uint8_t *data, size_t len);
 /**
  */
 uint8_t* sha1_result(sha1nfo *s);

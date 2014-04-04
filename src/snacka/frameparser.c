@@ -376,7 +376,7 @@ snError snFrameParser_processBytes(snFrameParser* parser,
         {
             unsigned long long payloadBytesLeft = parser->currentFrameHeader.payloadSize +
             parser->currentHeaderSize - parser->currentFrameByte;
-            const int bytesLeft = numBytes - currentSrcByte;
+            const uint32_t bytesLeft = numBytes - currentSrcByte;
             unsigned long long chunkSize = bytesLeft < payloadBytesLeft ? bytesLeft : payloadBytesLeft;
             
             

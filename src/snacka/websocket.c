@@ -70,7 +70,7 @@ struct snWebsocket
     /** */
     snMutableString query;
     /** The maximum size of a frame, i.e header + payload. */
-    int maxFrameSize;
+    uint32_t maxFrameSize;
     /** Buffer used for storing frames. */
     char* readBuffer;
     /** */
@@ -159,7 +159,7 @@ snError snWebsocket_sendFrame(snWebsocket* ws, snOpcode opcode, int numPayloadBy
     
     unsigned long long payloadSize = f.header.payloadSize;
     char headerBytes[SN_MAX_HEADER_SIZE];
-    int headerSize = 0;
+    uint32_t headerSize = 0;
     snFrameHeader_toBytes(&f.header, headerBytes, &headerSize);
     
     assert(payloadSize + headerSize <= ws->maxFrameSize);
@@ -178,7 +178,7 @@ snError snWebsocket_sendFrame(snWebsocket* ws, snOpcode opcode, int numPayloadBy
     }
     
     //send masked payload in chunks
-    int numBytesSent = 0;
+    uint32_t numBytesSent = 0;
     while (numBytesSent < payloadSize)
     {
         const int numBytesLeft = payloadSize - numBytesSent;
@@ -359,7 +359,7 @@ snWebsocket* snWebsocket_create(snOpenCallback openCallback,
                                 snCloseCallback closeCallback,
                                 snErrorCallback errorCallback,
                                 void* callbackData,
-                                snWebsocketSettings* settings)
+                                const snWebsocketSettings* settings)
 {
     if (settings == NULL ||
         settings->ioCallbacks == NULL ||

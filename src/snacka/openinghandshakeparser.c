@@ -44,51 +44,30 @@ static const char* HTTP_CONNECTION_FIELD_NAME = "Connection";
 static const char* HTTP_WS_PROTOCOL_NAME = "Sec-WebSocket-Protocol";
 static const char* HTTP_WS_EXTENSIONS_NAME = "Sec-WebSocket-Extensions";
 
-static int stringStartsWith(const char* haystack, int haystackLen, const char* needle, int needleLen)
-{
-    int i;
-
-    if (haystackLen < needleLen)
-    {
-        return 0;
-    }
-    
-    const int minLen = haystackLen < needleLen ? haystackLen : needleLen;
-    
-    for (i = 0; i < minLen; i++)
-    {
-        if (tolower(haystack[i]) != tolower(needle[i]))
-        {
-            return 0;
-        }
-    }
-    
-    return 1;
-}
-
 static int on_header_field(http_parser* p, const char *at, size_t length)
 {
+    (void)length;
     snOpeningHandshakeParser* parser = (snOpeningHandshakeParser*)p->data;
     
     parser->currentHeaderField = SN_UNRECOGNIZED_HTTP_FIELD;
     
-    if (stringStartsWith(at, length, HTTP_ACCEPT_FIELD_NAME, strlen(HTTP_ACCEPT_FIELD_NAME)))
+    if (strncasecmp(at, HTTP_ACCEPT_FIELD_NAME, strlen(HTTP_ACCEPT_FIELD_NAME)) == 0)
     {
         parser->currentHeaderField = SN_HTTP_ACCEPT;
     }
-    else if (stringStartsWith(at, length, HTTP_UPGRADE_FIELD_NAME, strlen(HTTP_UPGRADE_FIELD_NAME)))
+    else if (strncasecmp(at, HTTP_UPGRADE_FIELD_NAME, strlen(HTTP_UPGRADE_FIELD_NAME)) == 0)
     {
         parser->currentHeaderField = SN_HTTP_UPGRADE;
     }
-    else if (stringStartsWith(at, length, HTTP_CONNECTION_FIELD_NAME, strlen(HTTP_CONNECTION_FIELD_NAME)))
+    else if (strncasecmp(at, HTTP_CONNECTION_FIELD_NAME, strlen(HTTP_CONNECTION_FIELD_NAME)) == 0)
     {
         parser->currentHeaderField = SN_HTTP_CONNECTION;
     }
-    else if (stringStartsWith(at, length, HTTP_WS_PROTOCOL_NAME, strlen(HTTP_WS_PROTOCOL_NAME)))
+    else if (strncasecmp(at, HTTP_WS_PROTOCOL_NAME, strlen(HTTP_WS_PROTOCOL_NAME)) == 0)
     {
         parser->currentHeaderField = SN_HTTP_WS_PROTOCOL;
     }
-    else if (stringStartsWith(at, length, HTTP_WS_EXTENSIONS_NAME, strlen(HTTP_WS_EXTENSIONS_NAME)))
+    else if (strncasecmp(at, HTTP_WS_EXTENSIONS_NAME, strlen(HTTP_WS_EXTENSIONS_NAME)) == 0)
     {
         parser->currentHeaderField = SN_HTTP_WS_EXTENSIONS;
     }
@@ -126,6 +105,7 @@ static int on_header_value(http_parser* p, const char *at, size_t length)
 
 static int on_message_begin(http_parser* p)
 {
+    (void)p;
     //snOpeningHandshakeParser* parser = (snOpeningHandshakeParser*)p->data;
     //printf("-------------ON MESSAGE BEGIN----------\n");
     return 0;
@@ -133,6 +113,7 @@ static int on_message_begin(http_parser* p)
 
 static int on_message_complete(http_parser* p)
 {
+    (void)p;
     //snOpeningHandshakeParser* parser = (snOpeningHandshakeParser*)p->data;
     //c->response.bodySize = c->response.size - c->response.bodyStart;
     //printf("-----------ON MESSAGE COMPLETE---------\n");
@@ -179,8 +160,8 @@ static void generateKey(snOpeningHandshakeParser* p, snMutableString* keyStr)
     snMutableString_append(&acceptKey, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
 
     uint8_t acceptHash[20];
-    char* acceptKeyStr = snMutableString_getString(&acceptKey);
-    p->cryptoCallbacks->shaCallback(acceptKeyStr, strlen(acceptKeyStr), acceptHash);
+    const char* acceptKeyStr = snMutableString_getString(&acceptKey);
+    p->cryptoCallbacks->shaCallback((uint8_t*)acceptKeyStr, strlen(acceptKeyStr), acceptHash);
     snMutableString_deinit(&acceptKey);
 
     /* Base-64 encode it */
@@ -324,7 +305,7 @@ static snError validateResponse(snOpeningHandshakeParser* p)
             }
             else
             {
-                for (i = 0;  i < strlen(upgrVal); i++)
+                for (i = 0;  i < (int)strlen(upgrVal); i++)
                 {
                     if (upgrVal[i] != comp[0][i] &&
                         upgrVal[i] != comp[1][i])
@@ -358,7 +339,7 @@ static snError validateResponse(snOpeningHandshakeParser* p)
             }
             else
             {
-                for (i = 0;  i < strlen(connVal); i++)
+                for (i = 0;  i < (int)strlen(connVal); i++)
                 {
                     if (connVal[i] != comp[0][i] &&
                         connVal[i] != comp[1][i])

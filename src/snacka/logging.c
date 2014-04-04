@@ -39,10 +39,12 @@ void snDefaultLogCallback(const char* format, ...)
     va_start(args, format);
     vprintf(format, args);
     va_end(args);
+#else
+    (void)format;
 #endif
 }
 
 void snSilentLogCallback(const char* format, ...)
 {
-    //silent
+  (void)format;
 }

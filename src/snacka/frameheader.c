@@ -71,7 +71,7 @@ static int isControlOpcode(snOpcode oc)
 }
 
 
-snError snFrameHeader_toBytes(snFrameHeader* h, char* headerBytes, int* headerSize)
+snError snFrameHeader_toBytes(snFrameHeader* h, char* headerBytes, uint32_t* headerSize)
 {
     int i;
 

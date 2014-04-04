@@ -32,6 +32,8 @@
 
 #include "errorcodes.h"
 
+#include <stdint.h>
+
 /*! \file */
 
 #ifdef __cplusplus
@@ -105,7 +107,7 @@ extern "C"
      * @return An error code.
      * @see https://tools.ietf.org/html/rfc6455#section-5.2
      */
-    snError snFrameHeader_toBytes(snFrameHeader* h, char* headerBytes, int* headerSize);
+    snError snFrameHeader_toBytes(snFrameHeader* h, char* headerBytes, uint32_t* headerSize);
     
     /**
      * Converts an array of bytes to a \c snFrameHeader struct

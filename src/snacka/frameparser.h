@@ -56,7 +56,7 @@ extern "C"
         /** */
         void* messageCallbackData;
         /** */
-        int maxFrameSize;
+        uint32_t maxFrameSize;
         /** */
         char* buffer;
         /** */
@@ -75,9 +75,9 @@ extern "C"
         /** */
         int isParsingHeader;
         /** */
-        int currentFrameByte;
+        uint32_t currentFrameByte;
         /** */
-        int firstPayloadSizeByte;
+        uint32_t firstPayloadSizeByte;
         /** */
         int numPayloadSizeBytes;
         /** */

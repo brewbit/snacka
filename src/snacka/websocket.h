@@ -243,9 +243,9 @@ extern "C"
         /** A callback to pass received frames to. Ignored if NULL. */
         snFrameCallback frameCallback;
         /** If NULL, default socket I/O is used. */
-        snIOCallbacks* ioCallbacks;
+        const snIOCallbacks* ioCallbacks;
         /** */
-        snCryptoCallbacks* cryptoCallbacks;
+        const snCryptoCallbacks* cryptoCallbacks;
         /** Gets called to see if time consuming I/O operations should be cancelled. Ignored if NULL. */
         snIOCancelCallback cancelCallback;
     } snWebsocketSettings;
@@ -266,7 +266,7 @@ extern "C"
                                                 snCloseCallback closeCallback,
                                                 snErrorCallback errorCallback,
                                                 void* callbackData,
-                                                snWebsocketSettings* settings);
+                                                const snWebsocketSettings* settings);
     
     /**
      * Closes and deletes a given websocket.
